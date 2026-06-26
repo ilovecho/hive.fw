@@ -15,9 +15,11 @@
     --hive-frame-bg: #b6b6b6;
     --hive-label-bg: #e6eef7;
     --hive-label-color: #0b2b40;
-    --hive-value-bg: #fffdf3;
-    --hive-edit-bg: #fffde7;
-    --hive-read-bg: #eeeeee;
+    --hive-value-bg: #eef2f7;   /* 셀 기본 배경(읽기전용 느낌) */
+    --hive-edit-bg: #ffffff;    /* 편집 입력칸 배경 */
+    --hive-edit-border: #8fb0d4;/* 편집 입력칸 테두리 */
+    --hive-read-bg: #e9edf2;
+    --hive-read-color: #64748b; /* 읽기전용 텍스트 색 */
     --hive-focus-color: #2563eb;
     --hive-grid-gap: 1px;
     --hive-label-width: 96px;
@@ -131,6 +133,20 @@ input[type=button] {
 
 .hive-grid-cell.data-text {
     white-space: pre-wrap;
+    color: var(--hive-read-color);   /* 읽기전용 텍스트: 흐린 글자 */
+}
+
+/* 편집 가능한 텍스트 셀: 흰 입력박스 + 테두리로 입력칸임을 표시 */
+.hive-grid-cell.data-text.enablewrite[contenteditable="true"] {
+    color: #111827;
+    background: var(--hive-edit-bg);
+    border: 1px solid var(--hive-edit-border);
+    border-radius: 5px;
+    box-shadow: inset 0 1px 2px rgba(15, 40, 70, 0.07);
+    margin: 5px;
+    padding: 5px 7px;
+    min-height: 24px;
+    cursor: text;
 }
 
 .hive-grid-cell.data-check {
@@ -168,19 +184,22 @@ input[type=button] {
     width: 100%;
     min-width: 0;
     min-height: 28px;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    background: #ffffff;
+    border: 1px solid var(--hive-edit-border);
+    border-radius: 5px;
+    background: var(--hive-edit-bg);
     color: #111827;
     font: inherit;
     padding: 5px 6px;
+    box-shadow: inset 0 1px 2px rgba(15, 40, 70, 0.07);
 }
 
 .hive-grid-input:disabled,
 .hive-grid-cell select:disabled,
 .hive-grid-cell textarea:disabled {
-    color: #4b5563;
+    color: var(--hive-read-color);
     background: var(--hive-read-bg);
+    border-color: #cbd5e1;
+    box-shadow: none;
     cursor: default;
 }
 
