@@ -88,12 +88,15 @@ function make_random_string(int $length = 32, string $chars = 'abcdefghijklmnopq
     return $result;
 }
 
+/**
+ * 클라이언트 IP.
+ * 스푸핑 가능한 X-Forwarded-For/Client-IP 는 신뢰하지 않고 REMOTE_ADDR 만 사용.
+ * (신뢰할 수 있는 리버스 프록시 뒤에서 XFF 가 필요하면 프록시단에서 REMOTE_ADDR 를
+ *  보정하거나, 검증된 프록시 IP 목록 확인 후에만 XFF 를 채택할 것.)
+ */
 function get_client_ip(): string
 {
-    foreach (['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
-        if (!empty($_SERVER[$key])) return trim(explode(',', $_SERVER[$key])[0]);
-    }
-    return '0.0.0.0';
+    return !empty($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
 }
 
 function get_md5digest(string $userid, string $password): string

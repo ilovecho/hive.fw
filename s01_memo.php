@@ -15,6 +15,15 @@ $services['get_memo']    = '_get_memo';
 $services['save_memo']   = '_save_memo';
 $services['delete_memo'] = '_delete_memo';
 
+/** 허용 분류값 (화이트리스트) */
+const MEMO_CATEGORIES = ['일반', '업무', '개인'];
+
+/** 키워드 최대 길이 (DoS 완화) */
+const MEMO_KEYWORD_MAX = 100;
+
+/** 목록 최대 반환 행 수 */
+const MEMO_LIST_LIMIT = 500;
+
 /**
  * oid 입력을 양의 정수로 정규화. 유효하지 않으면 0 반환.
  */
@@ -23,6 +32,19 @@ function _memo_oid($raw): int
     if ($raw === '' || $raw === null) return 0;
     if (!ctype_digit((string)$raw)) return 0;   // 숫자만 허용
     return (int)$raw;
+}
+
+/** 분류값 정규화: 허용 목록에 없으면 기본값 '일반' */
+function _memo_category($raw): string
+{
+    $v = is_string($raw) ? trim($raw) : '';
+    return in_array($v, MEMO_CATEGORIES, true) ? $v : '일반';
+}
+
+/** 완료값 정규화: '1' 또는 '0' */
+function _memo_done($raw): string
+{
+    return ($raw === '1' || $raw === 1 || $raw === true || $raw === 'true') ? '1' : '0';
 }
 
 /* ── 테이블 자동 생성 ──────────────────────────────── */
@@ -45,9 +67,12 @@ function _list_memo(): void
 {
     _memo_table();
 
-    $keyword  = get_POSTMATCH('keyword',  '%@S%');
-    $category = get_POST('category', '');
+    // 키워드 길이 제한 (과도한 LIKE 검색 방지)
+    $rawKeyword = mb_substr((string)get_POST('keyword', ''), 0, MEMO_KEYWORD_MAX);
+    $keyword    = ($rawKeyword === '') ? '' : '%' . $rawKeyword . '%';
+    $category   = get_POST('category', '');
 
+    $limit = MEMO_LIST_LIMIT;
     $sql = <<<SQL
 SELECT oid, category, title, content, done, created
 FROM   memo
@@ -55,6 +80,7 @@ WHERE  1=1
 <c: AND category = :category />
 <c: AND (title LIKE :keyword OR content LIKE :keyword) />
 ORDER  BY oid DESC
+LIMIT  {$limit}
 SQL;
 
     $rows = get_sql($sql, [':category' => $category, ':keyword' => $keyword]);
@@ -84,8 +110,8 @@ function _save_memo(): void
     $oid      = _memo_oid(get_POST('oid', ''));
     $title    = get_POST('title', '');
     $content  = get_POST('content', '');
-    $category = get_POST('category', '일반');
-    $done     = get_POST('done', '0');
+    $category = _memo_category(get_POST('category', '일반'));
+    $done     = _memo_done(get_POST('done', '0'));
 
     if (trim($title) === '') outputJSON('제목을 입력하세요.', 'error');
 
