@@ -1,0 +1,35 @@
+# ───────────────────────────────────────────────
+#  Hive.fw .gitignore
+#  런타임 데이터·업로드·진단·OS 부산물은 추적하지 않음
+# ───────────────────────────────────────────────
+
+# SQLite 런타임 DB (사용자/비밀번호 해시 등 민감 데이터) 및 저널/WAL
+/db/hive.db
+/db/*.sqlite
+/db/*.db-journal
+/db/*.db-wal
+/db/*.db-shm
+# 스키마 시드(db/mes.sql)와 보호규칙(db/.htaccess)은 추적 유지
+
+# 업로드된 첨부 원본 (코드 아님) — .htaccess 만 유지
+/document/*
+!/document/.htaccess
+
+# 진단/임시 스크립트
+/probe.php
+/probe2.php
+/t.php
+/phpinfo.php
+
+# 로그
+*.log
+
+# OS / 에디터 부산물
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
