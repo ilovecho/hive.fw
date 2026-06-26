@@ -97,6 +97,23 @@ function compile_sql_template(string $sql, array &$params): string
  *  공개 API
  * ============================================================ */
 
+/**
+ * PDO 예외를 사용자에게 보여줄 안전한 RuntimeException 으로 변환.
+ * 운영상 흔한 원인(쓰기 권한)은 구체적으로 안내, 그 외는 일반 메시지.
+ */
+function _db_exception(PDOException $e): RuntimeException
+{
+    $m = strtolower($e->getMessage());
+    if (strpos($m, 'readonly') !== false
+        || strpos($m, 'unable to open') !== false
+        || strpos($m, 'disk i/o') !== false) {
+        return new RuntimeException(
+            '데이터베이스에 쓸 수 없습니다. db 디렉터리와 DB 파일의 쓰기 권한(웹서버 사용자)을 확인하세요.'
+        );
+    }
+    return new RuntimeException('데이터베이스 처리 중 오류가 발생했습니다.');
+}
+
 /** SELECT → 행 배열 */
 function get_sql(string $sql, array $param = []): array
 {
@@ -107,7 +124,7 @@ function get_sql(string $sql, array $param = []): array
         return $stmt->fetchAll();
     } catch (PDOException $e) {
         error_log('[DB][SELECT] ' . $e->getMessage() . "\nSQL: " . $compiled);
-        throw $e;
+        throw _db_exception($e);
     }
 }
 
@@ -121,7 +138,7 @@ function set_sql(string $sql, array $param = []): int
         return $stmt->rowCount();
     } catch (PDOException $e) {
         error_log('[DB][SET] ' . $e->getMessage() . "\nSQL: " . $compiled);
-        throw $e;
+        throw _db_exception($e);
     }
 }
 
@@ -138,7 +155,7 @@ function get_count(string $sql, array $param, int $lines): int
         return ($lines > 0) ? (int)ceil($total / $lines) : 0;
     } catch (PDOException $e) {
         error_log('[DB][COUNT] ' . $e->getMessage());
-        throw $e;
+        throw _db_exception($e);
     }
 }
 

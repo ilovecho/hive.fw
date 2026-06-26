@@ -104,8 +104,12 @@ trace_log("CALL func=$func user=$user ip=" . get_client_ip());
 try {
     $result = call_user_func($services[$func]);
     if ($result !== null) _respond(is_array($result) ? $result : ['status' => 'success', 'data' => $result]);
+} catch (RuntimeException $ex) {
+    // 우리가 만든 안전한 운영 메시지(예: DB 쓰기권한)는 그대로 안내
+    trace_log('[RUNTIME] ' . $ex->getMessage());
+    _error($ex->getMessage(), 500);
 } catch (Throwable $ex) {
-    // 상세는 서버 로그로만, 클라이언트에는 일반 메시지 (내부정보 유출 방지)
+    // 그 외 내부 예외는 상세를 로그로만, 클라이언트엔 일반 메시지
     trace_log('[EXCEPTION] ' . $ex->getMessage() . ' @ ' . $ex->getFile() . ':' . $ex->getLine());
     _error('요청 처리 중 오류가 발생했습니다.', 500);
 }

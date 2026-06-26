@@ -141,6 +141,16 @@ cp -r hive.fw /var/www/html/myapp
 chmod 644 /var/www/html/myapp/*.html
 chmod 640 /var/www/html/myapp/*.php
 chmod 640 /var/www/html/myapp/inc/*.php
+
+# DB 쓰기 권한 (필수)
+#  - SQLite 는 쓰기 시 db/ 디렉터리에 journal 파일을 만들므로
+#    파일뿐 아니라 디렉터리에도 웹서버 사용자(www-data) 쓰기 권한이 필요.
+#  - 권한이 없으면 조회(SELECT)는 되지만 저장/수정/삭제에서
+#    "데이터베이스에 쓸 수 없습니다" 오류 발생.
+sudo chown -R www-data:www-data /var/www/html/myapp/db
+sudo chmod 770 /var/www/html/myapp/db
+sudo chmod 660 /var/www/html/myapp/db/hive.db
+
 sudo systemctl restart apache2
 ```
 
