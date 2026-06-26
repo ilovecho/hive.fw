@@ -185,6 +185,7 @@
             <button type="button" onclick="load_by_input()">불러오기</button>
         </div>
         <div class="button-line">
+            <button type="button" class="secondary" onclick="go_list()">≡ 목록</button>
             <button type="button" class="secondary" onclick="new_memo()">신규</button>
             <button type="button" onclick="save_memo()">저장</button>
             <button type="button" class="danger" onclick="delete_memo()">삭제</button>
@@ -237,6 +238,14 @@ function showMsg(text, type) {
 
 function setMode(text) { document.getElementById('modeBadge').textContent = text; }
 
+/* ── 목록(memoctl)으로 이동 ──────────────────────── */
+function go_list() { window.location.href = 'w01_memoctl.html'; }
+
+function getQueryParam(name) {
+    var m = document.location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+    return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
+}
+
 function init() {
     if (typeof HiveGridLite === 'undefined') {
         showMsg('HiveGridLite 라이브러리를 찾을 수 없습니다. js/hive_grid_lite.js 경로를 확인하세요.', 'err');
@@ -244,6 +253,13 @@ function init() {
     }
     memoGrid = new HiveGridLite('memo_grid', memo_grid_option);
     new_memo();
+
+    // 목록(memoctl)에서 ?oid= 로 호출된 경우 해당 메모를 불러와 수정 모드
+    var oid = getQueryParam('oid');
+    if (oid) {
+        document.getElementById('loadOid').value = oid;
+        load_memo(oid);
+    }
 }
 
 /* ── 신규 입력 ───────────────────────────────────── */
