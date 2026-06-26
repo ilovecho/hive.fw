@@ -4,13 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Grid 기반 메모 입력/관리 화면 -->
+    <!-- Grid 기반 단일 메모 입력 화면 -->
     <link rel="stylesheet" href="./css/hive_table_lite.css" type="text/css">
     <link rel="stylesheet" href="./css/hive_grid_lite.css" type="text/css">
     <script src="./js/hive_grid_lite.js"></script>
     <script src="./js/anhive.base.js"></script>
 
-    <title>메모 입력관리 - Grid Form</title>
+    <title>메모 입력 - Grid Form</title>
 
 <style>
     :root {
@@ -38,7 +38,7 @@
     }
 
     .page-wrap {
-        width: min(1100px, calc(100% - 32px));
+        width: min(820px, calc(100% - 32px));
         margin: 0 auto;
         padding: 24px 0 40px;
     }
@@ -73,7 +73,7 @@
         margin: 16px 0;
         padding: 14px;
         display: grid;
-        grid-template-columns: minmax(260px, 1fr) auto;
+        grid-template-columns: minmax(220px, 1fr) auto;
         gap: 10px;
         background: var(--jk-card);
         border: 1px solid var(--jk-border);
@@ -84,7 +84,7 @@
     .search-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .search-line label { font-size: 13px; font-weight: 700; color: var(--jk-blue-dark); }
     .search-line input[type="text"] {
-        flex: 1 1 220px; min-height: 36px; padding: 8px 10px;
+        flex: 1 1 160px; min-height: 36px; padding: 8px 10px;
         border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;
     }
 
@@ -104,7 +104,6 @@
         overflow: hidden; background: var(--jk-card);
         border: 1px solid var(--jk-border); border-radius: 12px;
         box-shadow: 0 3px 10px rgba(31, 41, 55, 0.04);
-        margin-bottom: 16px;
     }
     .card-title {
         display: flex; align-items: center; justify-content: space-between;
@@ -126,17 +125,8 @@
     #memo_grid .hive-grid-cell { min-height: 38px; background: #fff; font-size: 13px; }
     #memo_grid .enablewrite { background: #fffef4; }
     #memo_grid select, #memo_grid input, #memo_grid textarea { font-family: inherit; font-size: 13px; }
-    #memo_grid textarea { min-height: 70px !important; width: 100%; border: none; background: transparent; resize: vertical; }
+    #memo_grid textarea { min-height: 90px !important; width: 100%; border: none; background: transparent; resize: vertical; }
     .col_hide { display: none !important; }
-
-    /* 목록 테이블 */
-    .memo-list { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .memo-list th { background: #e8edf3; color: #333; padding: 9px 8px; border: 1px solid var(--jk-border); white-space: nowrap; }
-    .memo-list td { padding: 7px 8px; border: 1px solid #dde5ee; text-align: center; }
-    .memo-list tbody tr { cursor: pointer; }
-    .memo-list tbody tr:hover td { background: #f5f8fc; }
-    .memo-list .done-y td { opacity: .55; text-decoration: line-through; }
-    .memo-list .empty td { color: var(--jk-muted); cursor: default; }
 
     .msg {
         margin-top: 12px; padding: 10px 12px; border-radius: 8px;
@@ -146,7 +136,7 @@
     .msg.ok  { border-color: #b7e4c7; background: #f0fdf4; color: var(--jk-ok); }
     .msg.err { border-color: #fecaca; background: #fef2f2; color: var(--jk-danger); }
 
-    @media (max-width: 900px) {
+    @media (max-width: 720px) {
         .page-head { align-items: flex-start; flex-direction: column; }
         .toolbar { grid-template-columns: 1fr; }
         .button-line { justify-content: flex-start; }
@@ -158,17 +148,17 @@
 <div class="page-wrap">
     <header class="page-head">
         <div>
-            <h1>메모 입력관리</h1>
-            <p>memo 테이블 기준 메모 등록, 조회, 수정, 삭제를 Grid 폼으로 수행합니다.</p>
+            <h1>메모 입력</h1>
+            <p>memo 한 건을 입력/수정합니다. OID로 기존 메모를 불러올 수 있습니다.</p>
         </div>
         <div id="modeBadge" class="mode-badge">신규</div>
     </header>
 
-    <section class="toolbar" aria-label="메모 조회 및 작업 버튼">
+    <section class="toolbar" aria-label="메모 불러오기 및 작업 버튼">
         <div class="search-line">
-            <label for="searchKeyword">검색어</label>
-            <input id="searchKeyword" type="text" placeholder="제목/내용 검색 후 Enter" autocomplete="off">
-            <button type="button" onclick="search_list()">조회</button>
+            <label for="loadOid">OID</label>
+            <input id="loadOid" type="text" inputmode="numeric" placeholder="불러올 메모 OID 입력 후 Enter" autocomplete="off">
+            <button type="button" onclick="load_by_input()">불러오기</button>
         </div>
         <div class="button-line">
             <button type="button" class="secondary" onclick="new_memo()">신규</button>
@@ -182,19 +172,7 @@
         <div id="memo_grid" class="grid-box"></div>
     </section>
 
-    <section class="card">
-        <div class="card-title">메모 목록 <small>행을 클릭하면 위 폼으로 불러옵니다</small></div>
-        <div class="grid-box">
-            <table class="memo-list">
-                <thead>
-                    <tr><th style="width:60px">OID</th><th style="width:80px">분류</th><th>제목</th><th style="width:60px">완료</th><th style="width:140px">등록일</th></tr>
-                </thead>
-                <tbody id="memoListBody"></tbody>
-            </table>
-        </div>
-    </section>
-
-    <div id="msg" class="msg">Grid 기반 메모 입력관리 화면입니다. 목록에서 행을 선택하거나 신규로 입력 후 저장하세요.</div>
+    <div id="msg" class="msg">새 메모를 입력하거나, 상단에 OID를 입력해 기존 메모를 불러와 수정하세요.</div>
 </div>
 
 <script>
@@ -221,7 +199,7 @@ var memo_grid_option = {
                 { title: '완료',   id: 'done',     type: 'check',    visible: true,  role: 'edit', span: 4 },
                 { title: '등록일', id: 'created',  type: 'text',     visible: true,  role: 'info', span: 4 },
                 { title: '제목 *', id: 'title',    type: 'text',     visible: true,  role: 'edit', span: 12 },
-                { title: '내용',   id: 'content',  type: 'textarea', visible: true,  role: 'edit', rows: 4, span: 12 }
+                { title: '내용',   id: 'content',  type: 'textarea', visible: true,  role: 'edit', rows: 5, span: 12 }
             ]
         }
     ]
@@ -242,15 +220,15 @@ function init() {
     }
     memoGrid = new HiveGridLite('memo_grid', memo_grid_option);
     new_memo();
-    search_list();
 }
 
 /* ── 신규 입력 ───────────────────────────────────── */
 function new_memo() {
     memoGrid.clear();
     memoGrid.showData({ oid: '', category: '일반', done: '0', created: '', title: '', content: '' });
+    document.getElementById('loadOid').value = '';
     setMode('신규');
-    showMsg('신규 메모를 입력합니다.');
+    showMsg('새 메모를 입력합니다.');
 }
 
 /* ── 저장 (INSERT/UPDATE) ────────────────────────── */
@@ -274,14 +252,13 @@ function save_memo() {
         var newOid = (resp.data && resp.data.oid) ? resp.data.oid : data.oid;
         showMsg((resp.data && resp.data.msg) ? resp.data.msg : '저장되었습니다.', 'ok');
         if (newOid) load_memo(newOid);
-        search_list();
     });
 }
 
 /* ── 삭제 ────────────────────────────────────────── */
 function delete_memo() {
     var oid = memoGrid.getData('oid', '');
-    if (!oid) { showMsg('삭제할 메모가 없습니다. 먼저 목록에서 선택하세요.', 'err'); return; }
+    if (!oid) { showMsg('삭제할 메모가 없습니다. 먼저 불러오세요.', 'err'); return; }
     if (!confirm('이 메모를 삭제하시겠습니까?')) return;
 
     var fd = new FormData();
@@ -291,68 +268,33 @@ function delete_memo() {
     POST(API_URL, fd, function() {
         showMsg('삭제되었습니다.', 'ok');
         new_memo();
-        search_list();
     });
 }
 
 /* ── 단일 조회 → 폼 로딩 ─────────────────────────── */
+function load_by_input() {
+    var oid = document.getElementById('loadOid').value.trim();
+    if (!oid) { alert('불러올 OID를 입력하세요.'); return; }
+    load_memo(oid);
+}
+
 function load_memo(oid) {
     var fd = new FormData();
     fd.append('func', 'get_memo');
     fd.append('oid',  oid);
 
     POST(API_URL, fd, function(resp) {
-        if (!resp.data) { showMsg('자료가 없습니다.', 'err'); return; }
+        if (!resp.data) { showMsg('OID[' + oid + '] 자료가 없습니다.', 'err'); return; }
         memoGrid.clear();
         memoGrid.showData(resp.data);
+        document.getElementById('loadOid').value = resp.data.oid;
         setMode('수정');
         showMsg('메모[' + oid + ']를 불러왔습니다.', 'ok');
-        document.querySelector('.page-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 }
 
-/* ── 목록 조회 ───────────────────────────────────── */
-function search_list() {
-    var fd = new FormData();
-    fd.append('func',    'list_memo');
-    fd.append('keyword', document.getElementById('searchKeyword').value);
-
-    POST(API_URL, fd, function(resp) {
-        renderList((resp.data && resp.data.list) ? resp.data.list : []);
-    });
-}
-
-function renderList(list) {
-    var tbody = document.getElementById('memoListBody');
-    while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
-
-    if (list.length === 0) {
-        var tr = document.createElement('tr');
-        tr.className = 'empty';
-        var td = document.createElement('td');
-        td.colSpan = 5;
-        td.textContent = '조회된 메모가 없습니다.';
-        tr.append(td);
-        tbody.append(tr);
-        return;
-    }
-
-    list.forEach(function(row) {
-        var tr = document.createElement('tr');
-        if (row.done === '1') tr.className = 'done-y';
-        tr.addEventListener('click', function() { load_memo(row.oid); });
-
-        [row.oid, row.category, row.title, (row.done === '1' ? '✔' : ''), row.created].forEach(function(val) {
-            var td = document.createElement('td');
-            td.textContent = (val === undefined || val === null) ? '' : String(val);
-            tr.append(td);
-        });
-        tbody.append(tr);
-    });
-}
-
-document.getElementById('searchKeyword').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') search_list();
+document.getElementById('loadOid').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') load_by_input();
 });
 
 window.addEventListener('DOMContentLoaded', init);
