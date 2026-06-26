@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+
+    <!-- Grid 기반 사용자 등록관리 화면 -->
+    <link rel="stylesheet" href="./css/hive_table_lite.css" type="text/css" onerror="this.onerror=null;this.href='./css/hive.table.lite.css';">
+    <link rel="stylesheet" href="./css/hive_grid_lite.css" type="text/css">
+    <script src="./js/hive_grid_lite.js"></script>
+    <script>if (typeof HiveGridLite === 'undefined') document.write('<script src="./js/hive.grid.lite.js"><\/script>');</script>
+    <script src="./js/hive_service_base.js"></script>
+    <script>if (typeof POST === 'undefined') document.write('<script src="./js/hive.service.base.js"><\/script>');</script>
+
+    <title>사용자 등록관리 - Grid Popup Signup</title>
+
+<style>
+    :root {
+        --jk-blue: #164c7e;
+        --jk-blue-dark: #0f3558;
+        --jk-blue-soft: #edf5fb;
+        --jk-border: #d7e1ea;
+        --jk-text: #1f2937;
+        --jk-muted: #6b7280;
+        --jk-bg: #f4f7fb;
+        --jk-card: #ffffff;
+        --jk-danger: #dc2626;
+        --jk-ok: #067647;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+        color: var(--jk-text);
+        background: var(--jk-bg);
+        line-height: 1.45;
+    }
+
+    .page-wrap {
+        width: min(1280px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 24px 0 40px;
+    }
+
+    .page-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 22px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--jk-blue-dark), var(--jk-blue));
+        border-radius: 14px;
+        box-shadow: 0 8px 20px rgba(15, 53, 88, 0.18);
+    }
+
+    .page-head h1 {
+        margin: 0 0 6px;
+        font-size: 24px;
+        letter-spacing: -0.04em;
+    }
+
+    .page-head p {
+        margin: 0;
+        font-size: 13px;
+        color: rgba(255,255,255,0.84);
+    }
+
+    .mode-badge {
+        min-width: 86px;
+        padding: 8px 12px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--jk-blue-dark);
+        background: #fff;
+        border-radius: 999px;
+    }
+
+    .toolbar {
+        margin: 16px 0;
+        padding: 14px;
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) auto;
+        gap: 10px;
+        background: var(--jk-card);
+        border: 1px solid var(--jk-border);
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(31, 41, 55, 0.04);
+    }
+
+    .search-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-line label {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--jk-blue-dark);
+    }
+
+    .search-line input[type="text"] {
+        flex: 1 1 220px;
+        min-height: 36px;
+        padding: 8px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .button-line {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    button,
+    input[type="button"] {
+        min-height: 36px;
+        padding: 7px 13px;
+        border: 1px solid var(--jk-blue);
+        border-radius: 8px;
+        background: var(--jk-blue);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    button.secondary,
+    input.secondary[type="button"] {
+        color: var(--jk-blue);
+        background: #fff;
+    }
+
+    button.danger,
+    input.danger[type="button"] {
+        border-color: var(--jk-danger);
+        background: var(--jk-danger);
+    }
+
+    button:hover,
+    input[type="button"]:hover { filter: brightness(0.96); }
+
+    .card {
+        overflow: hidden;
+        background: var(--jk-card);
+        border: 1px solid var(--jk-border);
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(31, 41, 55, 0.04);
+    }
+
+    .card-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        color: var(--jk-blue-dark);
+        background: var(--jk-blue-soft);
+        border-bottom: 1px solid var(--jk-border);
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .card-title small {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--jk-muted);
+    }
+
+    .grid-box { padding: 12px; }
+
+    /* GridLite 화면 맞춤 보정 */
+    #user_grid .hive-grid-lite {
+        border: 1px solid #d7e1ea;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #d7e1ea;
+        font-family: inherit;
+        font-size: 13px;
+    }
+
+    #user_grid .hive-grid-section + .hive-grid-section {
+        border-top: 1px solid #d7e1ea;
+    }
+
+    #user_grid .hive-grid-section-title {
+        min-height: 36px;
+        color: var(--jk-blue-dark);
+        background: #f1f7fc;
+        border-bottom: 1px solid #d7e1ea;
+        font-size: 14px;
+    }
+
+    #user_grid .hive-grid {
+        background: #e5edf5;
+    }
+
+    #user_grid .hive-grid-item {
+        min-height: 38px;
+        background: #fff;
+    }
+
+    #user_grid .hive-grid-label,
+    #user_grid .keycolume {
+        justify-content: center;
+        color: #344256;
+        background: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        font-weight: 700;
+    }
+
+    #user_grid .hive-grid-cell {
+        min-height: 38px;
+        background: #fff;
+        font-size: 13px;
+    }
+
+    #user_grid .enablewrite {
+        background: #fffef4;
+    }
+
+    #user_grid .hidetext {
+        -webkit-text-security: disc !important;
+        text-security: disc;
+    }
+
+    #user_grid select,
+    #user_grid input,
+    #user_grid textarea {
+        font-family: inherit;
+        font-size: 13px;
+    }
+
+    #user_grid textarea {
+        min-height: 58px !important;
+    }
+
+    .col_hide { display: none !important; }
+
+    .msg {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        color: var(--jk-muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .msg.info { border-color: #cbd5e1; background: #ffffff; color: var(--jk-muted); }
+    .msg.ok   { border-color: #b7e4c7; background: #f0fdf4; color: var(--jk-ok); }
+    .msg.err  { border-color: #fecaca; background: #fef2f2; color: var(--jk-danger); }
+
+    .help-box {
+        margin-top: 16px;
+        padding: 12px 14px;
+        background: #fff;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        color: var(--jk-muted);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .required-mark {
+        color: var(--jk-danger);
+        font-weight: 900;
+    }
+
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.46);
+        z-index: 1000;
+    }
+
+    .modal-backdrop.is-open { display: flex; }
+
+    .modal-panel {
+        width: min(520px, 100%);
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #d7e1ea;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
+        overflow: hidden;
+    }
+
+    .modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 18px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--jk-blue-dark), var(--jk-blue));
+    }
+
+    .modal-head h2 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: -0.04em;
+    }
+
+    .modal-close {
+        min-width: 36px;
+        padding: 4px 8px;
+        border-color: rgba(255,255,255,0.65);
+        background: rgba(255,255,255,0.12);
+        color: #fff;
+        font-size: 18px;
+    }
+
+    .signup-form {
+        padding: 18px;
+        display: grid;
+        gap: 12px;
+    }
+
+    .signup-row {
+        display: grid;
+        grid-template-columns: 135px 1fr;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .signup-row label {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--jk-blue-dark);
+    }
+
+    .signup-row input,
+    .signup-row select {
+        width: 100%;
+        min-height: 38px;
+        padding: 8px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+    }
+
+    .signup-guide {
+        padding: 10px 12px;
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        color: var(--jk-muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .modal-foot {
+        padding: 14px 18px 18px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    @media (max-width: 640px) {
+        .signup-row { grid-template-columns: 1fr; gap: 4px; }
+    }
+
+    @media (max-width: 900px) {
+        .page-head { align-items: flex-start; flex-direction: column; }
+        .toolbar { grid-template-columns: 1fr; }
+        .button-line { justify-content: flex-start; }
+        #user_grid .hive-grid-item { grid-column: span 12 !important; }
+    }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+    <header class="page-head">
+        <div>
+            <h1>사용자 등록관리</h1>
+            <p>users 테이블 기준 사용자 등록, 조회, 수정, 상태 및 권한 관리를 수행합니다.</p>
+        </div>
+        <div id="modeBadge" class="mode-badge">신규</div>
+    </header>
+
+    <section class="toolbar" aria-label="사용자 조회 및 작업 버튼">
+        <div class="search-line">
+            <label for="searchUserid">사용자ID</label>
+            <input id="searchUserid" type="text" placeholder="조회할 사용자ID를 입력하세요" autocomplete="off">
+            <button type="button" onclick="get_user_by_input()">조회</button>
+        </div>
+        <div class="button-line">
+			<!--
+            <button type="button" onclick="openSignupPopup()">신규 사용자 등록</button>
+            <button type="button" class="secondary" onclick="new_user()">입력 초기화</button>
+			-->
+            <button type="button" onclick="set_user()">저장</button>
+			<!--
+            <button type="button" class="secondary" onclick="validate_mail()">이메일 검증</button>
+            <button type="button" class="secondary" onclick="reset_password()">임시비번 발급</button>
+			-->
+            <button type="button" class="danger" onclick="change_password()">비번변경</button>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-title">사용자 정보 <small><span class="required-mark">*</span> 필수 입력</small></div>
+        <div id="user_grid" class="grid-box"></div>
+    </section>
+
+    <div id="msg" class="msg info">
+        Grid 기반 사용자 등록관리 화면입니다. 신규 사용자는 팝업에서 func=signup_user로 등록하고, 등록 후 사용자ID로 자동 조회합니다.
+    </div>
+
+    <div class="help-box">
+        기존 <b>ProfileLite</b> 세로형 입력 구조를 <b>HiveGridLite</b> 기반 다열 Grid 구조로 변경했습니다. 신규 등록은 <b>signup.php</b>의 입력 흐름을 팝업으로 반영하여 사용자ID, 비밀번호, 비밀번호 확인, 이름, 이메일을 입력하고 등록 후 즉시 조회합니다.
+    </div>
+</div>
+
+<div id="signupModal" class="modal-backdrop" aria-hidden="true" onclick="modalBackdropClose(event)">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="signupTitle" onclick="event.stopPropagation()">
+        <div class="modal-head">
+            <h2 id="signupTitle">신규 사용자 등록</h2>
+            <button type="button" class="modal-close" onclick="closeSignupPopup()" aria-label="닫기">×</button>
+        </div>
+        <form id="signupForm" class="signup-form" onsubmit="signup_user_popup(); return false;">
+            <div class="signup-guide">
+                신규 등록은 기본 가입 흐름과 동일하게 사용자ID, 비밀번호, 비밀번호 확인, 이름, 이메일을 입력합니다. 등록이 완료되면 사용자ID로 관리 화면에 자동 조회됩니다.
+            </div>
+            <div class="signup-row">
+                <label for="signupUserid">User Account <span class="required-mark">*</span></label>
+                <input id="signupUserid" name="userid" type="text" autocomplete="username" placeholder="사용자ID">
+            </div>
+            <div class="signup-row">
+                <label for="signupPassword">Password <span class="required-mark">*</span></label>
+                <input id="signupPassword" name="password" type="password" autocomplete="new-password" placeholder="비밀번호">
+            </div>
+            <div class="signup-row">
+                <label for="signupTemppass">Retry password <span class="required-mark">*</span></label>
+                <input id="signupTemppass" name="temppass" type="password" autocomplete="new-password" placeholder="비밀번호 확인">
+            </div>
+            <div class="signup-row">
+                <label for="signupName">User Name <span class="required-mark">*</span></label>
+                <input id="signupName" name="name" type="text" autocomplete="name" placeholder="사용자명">
+            </div>
+            <div class="signup-row">
+                <label for="signupEmail">Confirm mail</label>
+                <input id="signupEmail" name="email" type="email" autocomplete="email" placeholder="email@example.com">
+            </div>
+            <div class="signup-row">
+                <label for="signupRoleLabel">기본 역할</label>
+                <input id="signupRoleLabel" type="text" value="일반 사용자(U)" disabled>
+                <input id="signupRolecode" name="rolecode" type="hidden" value="U">
+            </div>
+        </form>
+        <div class="modal-foot">
+            <button type="button" class="secondary" onclick="lookupSignupUser()">등록자 조회</button>
+            <button type="button" class="secondary" onclick="closeSignupPopup()">취소</button>
+            <button type="button" onclick="signup_user_popup()">등록</button>
+        </div>
+    </div>
+</div>
+
+<script>
+'use strict';
+
+var API_URL = 'w01-s00.php';
+var query = getQueryParams();
+var userGrid = null;
+
+var CODE_PROVIDER = [
+    {v:'local', l:'local - 자체계정'},
+    {v:'google', l:'google'},
+    {v:'kakao', l:'kakao'},
+    {v:'naver', l:'naver'}
+];
+
+var CODE_GENDER = [
+    {v:'', l:'선택 안함'},
+    {v:'M', l:'남성'},
+    {v:'F', l:'여성'},
+    {v:'N', l:'기타/미지정'}
+];
+
+var CODE_LANGUAGE = [
+    {v:'ko', l:'한국어'},
+    {v:'en', l:'English'},
+    {v:'km', l:'Khmer'},
+    {v:'rw', l:'Kinyarwanda'},
+    {v:'sw', l:'Swahili'}
+];
+
+var CODE_COUNTRY = [
+    {v:'KR', l:'대한민국'},
+    {v:'KH', l:'캄보디아'},
+    {v:'RW', l:'르완다'},
+    {v:'TZ', l:'탄자니아'},
+    {v:'GH', l:'가나'},
+    {v:'UZ', l:'우즈베키스탄'},
+    {v:'CM', l:'카메룬'},
+    {v:'', l:'기타/미지정'}
+];
+
+var CODE_ROLE = [
+    {v:'U', l:'일반 사용자(U)'},
+    {v:'user', l:'일반 사용자(user)'},
+    {v:'worker', l:'작업자'},
+    {v:'manager', l:'관리자'},
+    {v:'admin', l:'시스템 관리자'},
+    {v:'viewer', l:'조회 전용'}
+];
+
+var CODE_STATE = [
+    {v:'active', l:'사용중'},
+    {v:'pending', l:'대기/접수'},
+    {v:'locked', l:'잠김'},
+    {v:'disabled', l:'사용중지'},
+    {v:'withdrawn', l:'탈퇴/철회'}
+];
+
+var user_grid_option = {
+    table: {
+        width: '100%',
+        columns: 12,
+        label_width: '108px',
+        min_height: '38px',
+        default_span: 4,
+        gap: '1px'
+    },
+    sections: [
+        {
+            title: 'A. 기본정보',
+            columns: 12,
+            fields: [
+                { title:'자료ID', id:'oid', type:'text', visible:true, role:'info', span:3 },
+                { title:'사용자ID *', id:'userid', type:'text', visible:true, role:'edit', span:3 },
+                { title:'이름 *', id:'name', type:'text', visible:true, role:'edit', span:3 },
+                { title:'공급자 *', id:'provider', type:'code', visible:true, role:'edit', codes:CODE_PROVIDER, span:3 },
+                { title:'등록일', id:'enrolled', type:'date', visible:true, role:'edit', span:3 },
+                { title:'철회일', id:'withdrawed', type:'date', visible:true, role:'edit', span:3 }
+            ]
+        },
+        {
+            title: 'B. 권한 및 상태',
+            columns: 12,
+            fields: [
+                { title:'소속/그룹', id:'groupid', type:'text', visible:true, role:'edit', span:4 },
+                { title:'역할 *', id:'rolecode', type:'code', visible:true, role:'edit', codes:CODE_ROLE, span:4 },
+                { title:'상태', id:'state', type:'code', visible:true, role:'edit', codes:CODE_STATE, span:4 },
+                { title:'마스터코드 *', id:'masterkey', type:'text', visible:true, role:'edit', span:4 }
+            ]
+        },
+        {
+            title: 'C. 연락처 및 부가정보',
+            columns: 12,
+            fields: [
+                { title:'이메일', id:'email', type:'text', visible:true, role:'edit', span:4 },
+                { title:'전화번호', id:'phone', type:'text', visible:true, role:'edit', span:4 },
+                { title:'생년월일', id:'birth', type:'date', visible:true, role:'edit', span:4 },
+                { title:'성별', id:'gender', type:'code', visible:true, role:'edit', codes:CODE_GENDER, span:3 },
+                { title:'국가', id:'country', type:'code', visible:true, role:'edit', codes:CODE_COUNTRY, span:3 },
+                { title:'언어', id:'language', type:'code', visible:true, role:'edit', codes:CODE_LANGUAGE, span:3 },
+                { title:'주소', id:'address', type:'textarea', visible:true, role:'edit', rows:2, span:12 }
+            ]
+        },
+        {
+            title: 'D. 시스템 및 보안정보',
+            columns: 12,
+            fields: [
+                { title:'비밀번호', id:'password', type:'text', visible:true, role:'pass', span:4 },
+                { title:'비밀번호 확인', id:'temppass', type:'text', visible:true, role:'pass', span:4 },
+                { title:'호출ID', id:'md5id', type:'text', visible:false, role:'info', span:1 },
+                { title:'접속ID', id:'md5digest', type:'text', visible:false, role:'info', span:1 }
+            ]
+        }
+    ]
+};
+
+function init() {
+    if (typeof HiveGridLite === 'undefined') {
+        showMsg('HiveGridLite 라이브러리를 찾을 수 없습니다. js/hive_grid_lite.js 경로를 확인하세요.', 'err');
+        return;
+    }
+
+    userGrid = new HiveGridLite('user_grid', user_grid_option);
+    new_user();
+
+    if (query.userid) {
+        document.getElementById('searchUserid').value = query.userid;
+        get_user(query.userid, false);
+    }
+}
+
+function today() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+}
+
+function setMode(modeText) {
+    document.getElementById('modeBadge').textContent = modeText;
+}
+
+function showMsg(text, type) {
+    var el = document.getElementById('msg');
+    if (!el) return;
+    el.className = 'msg ' + (type || 'info');
+    el.textContent = text;
+}
+
+function getQueryParams() {
+    var params = {};
+    var qs = document.location.search.replace(/^\?/, '');
+    if (!qs) return params;
+    qs.split('&').forEach(function(part) {
+        if (!part) return;
+        var p = part.split('=');
+        params[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || '').replace(/\+/g, ' '));
+    });
+    return params;
+}
+
+function gridToObject() {
+    if (!userGrid) return {};
+    try {
+        var parsed = JSON.parse(userGrid.toJson());
+        if (Array.isArray(parsed)) return parsed[0] || {};
+        return parsed || {};
+    } catch (ex) {
+        console.error(ex);
+        return {};
+    }
+}
+
+function normalizePayload(payload) {
+    Object.keys(payload).forEach(function(key) {
+        if (payload[key] === undefined || payload[key] === null) payload[key] = '';
+        if (typeof payload[key] === 'string') payload[key] = payload[key].trim();
+    });
+    return payload;
+}
+
+function collectUserPayload(mode) {
+    var payload = normalizePayload(gridToObject());
+
+    if (!payload.provider) payload.provider = 'local';
+    if (!payload.rolecode) payload.rolecode = 'U';
+    if (!payload.state) payload.state = 'active';
+    if (!payload.country) payload.country = 'KR';
+    if (!payload.language) payload.language = 'ko';
+    if (payload.masterkey === '') payload.masterkey = '0';
+
+    // 기존 사용자 수정 시 비밀번호 공란은 서버로 보내지 않아 기존 비밀번호를 보존하도록 한다.
+    if (mode === 'save' && payload.oid && !payload.password && !payload.temppass) {
+        delete payload.password;
+        delete payload.temppass;
+    }
+
+    return payload;
+}
+
+function showUserData(data) {
+    var user = Array.isArray(data) ? (data[0] || {}) : (data || {});
+    var safeUser = Object.assign({}, user);
+
+    // 저장된 비밀번호/임시비밀번호를 화면에 다시 노출하지 않는다.
+    safeUser.password = '';
+    safeUser.temppass = '';
+
+    userGrid.clear();
+    userGrid.showData(safeUser);
+
+    if (user.userid) document.getElementById('searchUserid').value = user.userid;
+    setMode(user.oid ? '수정' : '신규');
+}
+
+function new_user() {
+    if (!userGrid) return;
+    userGrid.clear();
+    userGrid.showData({
+        oid: '',
+        userid: '',
+        name: '',
+        provider: 'local',
+        groupid: '',
+        rolecode: 'U',
+        state: 'active',
+        country: 'KR',
+        language: 'ko',
+        masterkey: '0',
+        enrolled: today(),
+        withdrawed: '',
+        email: '',
+        phone: '',
+        birth: '',
+        gender: '',
+        address: '',
+        password: '',
+        temppass: '',
+        md5id: '',
+        md5digest: ''
+    });
+    document.getElementById('searchUserid').value = '';
+    setMode('신규');
+    showMsg('신규 사용자를 입력합니다.', 'info');
+}
+
+function validatePayload(payload, mode) {
+    if (!payload.userid) return '사용자ID를 입력하세요.';
+    if (!payload.name) return '이름을 입력하세요.';
+    if (!payload.provider) return '공급자를 선택하세요.';
+    if (!payload.rolecode) return '역할을 선택하세요.';
+    if (payload.masterkey === '') return '마스터코드를 입력하세요.';
+
+    if (payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+        return '이메일 형식이 올바르지 않습니다.';
+    }
+
+    var isNew = !payload.oid;
+    if ((mode === 'save' && isNew) || mode === 'change_passwd') {
+        if (!payload.password) return '비밀번호를 입력하세요.';
+        if (payload.password.length < 4) return '비밀번호는 최소 4자 이상 입력하세요.';
+    }
+
+    if (payload.password || payload.temppass) {
+        if (payload.password !== payload.temppass) return '비밀번호와 비밀번호 확인이 다릅니다.';
+    }
+
+    return '';
+}
+
+function makeFormData(func, payload) {
+    var data = new FormData();
+    data.append('func', func);
+    data.append('json', JSON.stringify([payload]));
+
+    // 기존 PHP 함수가 개별 POST 인자를 참조하는 경우를 위해 json과 함께 개별 필드도 전송한다.
+    Object.keys(payload).forEach(function(key) {
+        data.append(key, payload[key]);
+    });
+    return data;
+}
+
+function postForm(data, callback) {
+    if (typeof POST === 'function') {
+        POST(API_URL, data, callback);
+        return;
+    }
+
+    fetch(API_URL, { method:'POST', body:data, credentials:'same-origin' })
+        .then(function(r) { return r.json(); })
+        .then(function(resp) { if (callback) callback(resp || {}); })
+        .catch(function(e) { showMsg('통신 오류: ' + e.message, 'err'); });
+}
+
+function callApi(func, payload, callback) {
+    postForm(makeFormData(func, payload), function(resp) {
+        if (callback) callback(resp || {});
+    });
+}
+
+function isSuccessResponse(resp) {
+    return !resp || resp.status === undefined || resp.status === 'success' || resp.status === true;
+}
+
+function getResponseMessage(resp, fallback) {
+    if (!resp) return fallback || '';
+    if (typeof resp.data === 'string') return resp.data;
+    if (resp.message) return resp.message;
+    if (resp.data !== undefined) {
+        try { return JSON.stringify(resp.data); } catch (ex) { return String(resp.data); }
+    }
+    return fallback || '';
+}
+
+function openSignupPopup() {
+    var main = gridToObject();
+    document.getElementById('signupUserid').value = main.userid || document.getElementById('searchUserid').value.trim() || '';
+    document.getElementById('signupPassword').value = '';
+    document.getElementById('signupTemppass').value = '';
+    document.getElementById('signupName').value = main.name || '';
+    document.getElementById('signupEmail').value = main.email || '';
+    document.getElementById('signupRolecode').value = 'U';
+
+    var modal = document.getElementById('signupModal');
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    setTimeout(function() { document.getElementById('signupUserid').focus(); }, 30);
+}
+
+function closeSignupPopup() {
+    var modal = document.getElementById('signupModal');
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function modalBackdropClose(e) {
+    if (e && e.target && e.target.id === 'signupModal') closeSignupPopup();
+}
+
+function collectSignupPayload() {
+    return normalizePayload({
+        userid: document.getElementById('signupUserid').value,
+        password: document.getElementById('signupPassword').value,
+        temppass: document.getElementById('signupTemppass').value,
+        name: document.getElementById('signupName').value,
+        email: document.getElementById('signupEmail').value,
+        rolecode: 'U',
+        provider: 'local',
+        state: 'active',
+        masterkey: '0',
+        enrolled: today(),
+        country: 'KR',
+        language: 'ko'
+    });
+}
+
+function validateSignupPayload(payload) {
+    if (!payload.userid) return '사용자ID를 입력하세요.';
+    if (!payload.password) return '비밀번호를 입력하세요.';
+    if (!payload.temppass) return '비밀번호 확인을 입력하세요.';
+    if (payload.password !== payload.temppass) return '비밀번호와 비밀번호 확인이 다릅니다.';
+    if (payload.password.length < 4) return '비밀번호는 최소 4자 이상 입력하세요.';
+    if (!payload.name) return '사용자명을 입력하세요.';
+    if (payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) return '이메일 형식이 올바르지 않습니다.';
+    return '';
+}
+
+function signup_user_popup() {
+    var payload = collectSignupPayload();
+    var error = validateSignupPayload(payload);
+    if (error) {
+        alert(error);
+        showMsg(error, 'err');
+        return;
+    }
+
+    callApi('signup_user', payload, function(resp) {
+        console.log(resp.data);
+        if (!isSuccessResponse(resp)) {
+            var msg = getResponseMessage(resp, '신규 사용자 등록에 실패했습니다.');
+            alert(msg);
+            showMsg(msg, 'err');
+            return;
+        }
+
+        closeSignupPopup();
+        showMsg('신규 사용자[' + payload.userid + ']를 등록했습니다. 등록자를 조회합니다.', 'ok');
+        alert('신규 사용자[' + payload.userid + ']를 등록했습니다.');
+        document.getElementById('searchUserid').value = payload.userid;
+        get_user(payload.userid, false);
+    });
+}
+
+function lookupSignupUser() {
+    var userid = document.getElementById('signupUserid').value.trim();
+    if (!userid) {
+        alert('조회할 사용자ID를 입력하세요.');
+        return;
+    }
+    closeSignupPopup();
+    document.getElementById('searchUserid').value = userid;
+    get_user(userid, true);
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSignupPopup();
+});
+
+function set_user() {
+    var payload = collectUserPayload('save');
+    var error = validatePayload(payload, 'save');
+    if (error) {
+        alert(error);
+        showMsg(error, 'err');
+        return;
+    }
+
+    callApi('set_user', payload, function(resp) {
+        console.log(resp.data);
+        if (!isSuccessResponse(resp)) {
+            var msg = getResponseMessage(resp, '사용자 정보 저장에 실패했습니다.');
+            alert(msg);
+            showMsg(msg, 'err');
+            return;
+        }
+        showMsg('사용자 정보를 저장했습니다.', 'ok');
+        alert('사용자 정보를 저장했습니다.');
+        if (payload.userid) get_user(payload.userid, false);
+    });
+}
+
+function get_user_by_input() {
+    var userid = document.getElementById('searchUserid').value.trim();
+    if (!userid) {
+        alert('조회할 사용자ID를 입력하세요.');
+        return;
+    }
+    get_user(userid, true);
+}
+
+function get_user(userid, showAlert) {
+    var payload = { userid: userid || '' };
+    if (!payload.userid) return;
+
+    callApi('get_userinfo', payload, function(resp) {
+        console.log(resp.data);
+        if (!isSuccessResponse(resp)) {
+            var msg = getResponseMessage(resp, '사용자 조회에 실패했습니다.');
+            if (showAlert !== false) alert(msg);
+            showMsg(msg, 'err');
+            return;
+        }
+        if (resp.data !== undefined && resp.data !== null && !(Array.isArray(resp.data) && resp.data.length === 0)) {
+            showUserData(resp.data);
+            showMsg('사용자[' + payload.userid + '] 정보를 조회했습니다.', 'ok');
+        } else if (showAlert !== false) {
+            alert('사용자[' + payload.userid + '] 자료가 없습니다. 신규 등록 모드로 전환합니다.');
+            new_user();
+            userGrid.showData({ userid: payload.userid, enrolled: today(), provider: 'local', rolecode: 'U' });
+            setMode('신규');
+            showMsg('조회 결과가 없어 신규 사용자 입력으로 전환했습니다.', 'info');
+        }
+    });
+}
+
+function validate_mail() {
+    var payload = collectUserPayload('validate_mail');
+    if (!payload.userid && !payload.email) {
+        alert('사용자ID 또는 이메일을 입력하세요.');
+        return;
+    }
+    callApi('validate_by_mail', payload, function(resp) {
+        console.log(resp.data);
+        showMsg('이메일 검증 요청을 처리했습니다.', 'ok');
+        alert('이메일 검증 요청을 처리했습니다.');
+    });
+}
+
+function reset_password() {
+    var payload = collectUserPayload('reset_passwd');
+    if (!payload.userid && !payload.email) {
+        alert('사용자ID 또는 이메일을 입력하세요.');
+        return;
+    }
+    if (!confirm('임시 비밀번호를 발급하시겠습니까?')) return;
+
+    callApi('reset_passwd', payload, function(resp) {
+        console.log(resp.data);
+        showMsg('임시 비밀번호 발급 요청을 처리했습니다.', 'ok');
+        alert('임시 비밀번호 발급 요청을 처리했습니다.');
+    });
+}
+
+function change_password() {
+    var payload = collectUserPayload('change_passwd');
+    var error = validatePayload(payload, 'change_passwd');
+    if (error) {
+        alert(error);
+        showMsg(error, 'err');
+        return;
+    }
+    if (!confirm('사용자 비밀번호를 수정하시겠습니까?')) return;
+
+    callApi('change_passwd', payload, function(resp) {
+        console.log(resp.data);
+        showMsg('사용자 비밀번호를 수정했습니다.', 'ok');
+        alert('사용자 비밀번호를 수정했습니다.');
+        userGrid.showData({ password: '', temppass: '' });
+    });
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

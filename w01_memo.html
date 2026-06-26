@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>메모 관리</title>
+<link rel="stylesheet" href="./css/hive_table_lite.css">
+<script src="./js/hive_table_lite.js"></script>
+<script src="./js/anhive.base.js"></script>
+<style>
+    :root {
+        --primary: #1a4f8a;
+        --primary-dark: #0f3360;
+        --bg: #f0f4f8;
+        --card: #ffffff;
+        --border: #ccd6e0;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; padding: 0;
+        background: var(--bg);
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+        font-size: 14px;
+    }
+    .page-wrap { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 20px 0 40px; }
+
+    /* 헤더 */
+    .page-head {
+        padding: 16px 24px;
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        border-radius: 12px;
+        color: #fff;
+        margin-bottom: 16px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .page-head h1 { margin: 0; font-size: 20px; }
+    .page-head small { opacity: .75; font-size: 12px; }
+
+    /* 검색/필터 바 */
+    .filter-bar {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px 16px;
+        display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+        margin-bottom: 12px;
+    }
+    .filter-bar label { font-size: 12px; color: #555; }
+    .filter-bar select,
+    .filter-bar input[type=text] {
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 5px 9px;
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+    }
+    .filter-bar input[type=text] { width: 200px; }
+
+    /* 버튼 */
+    .btn {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 6px 14px; border-radius: 5px; border: none;
+        font-size: 13px; font-family: inherit; cursor: pointer;
+        transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: #2d7a4f; color: #fff; }
+    .btn-outline  { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-danger  { background: #c0392b; color: #fff; }
+    .btn-sm { padding: 3px 9px; font-size: 12px; }
+
+    /* 액션 바 */
+    .action-bar {
+        display: flex; gap: 8px; align-items: center;
+        margin-bottom: 10px;
+    }
+    .action-bar .spacer { flex: 1; }
+    #total-info { font-size: 12px; color: #666; }
+
+    /* 테이블 래퍼 */
+    .tbl-wrap {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: auto;
+    }
+    #tbl_memo table {
+        width: 100%; border: none; margin: 0;
+        border-collapse: collapse; font-size: 13px;
+    }
+    #tbl_memo th {
+        background: #e8edf3; color: #333; font-weight: 600;
+        padding: 9px 8px; border: 1px solid var(--border);
+        white-space: nowrap;
+    }
+    #tbl_memo td {
+        padding: 6px 8px; border: 1px solid #dde5ee;
+        vertical-align: middle;
+    }
+    #tbl_memo tr:hover td { background: #f5f8fc; }
+    #tbl_memo .enablewrite {
+        background: #fffde7; cursor: text;
+        min-width: 80px;
+    }
+    #tbl_memo .enablewrite:focus { background: #fff9c4; outline: 2px solid var(--primary); }
+
+    /* 셀 내 버튼 */
+    #tbl_memo input[type=button] {
+        margin: 1px 2px; padding: 3px 9px;
+        font-size: 12px; font-family: inherit;
+        border-radius: 4px; border: 1px solid #aaa;
+        background: #f5f5f5; cursor: pointer;
+    }
+    #tbl_memo input[type=button]:hover { background: #e0e0e0; }
+    #tbl_memo input[value="삭제"] { color: #c0392b; border-color: #e88; }
+    #tbl_memo input[value="저장"] { color: #1a5c2f; border-color: #8bc; }
+
+    /* 완료 행 */
+    tr.done-row td { opacity: .55; text-decoration: line-through; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+    <!-- 헤더 -->
+    <div class="page-head">
+        <div>
+            <h1>📋 메모 관리</h1>
+            <small>Hive.fw 샘플 — TableLite + POST CRUD</small>
+        </div>
+    </div>
+
+    <!-- 검색 바 -->
+    <div class="filter-bar">
+        <label>분류</label>
+        <select id="sel_category" onchange="load_list()">
+            <option value="">전체</option>
+            <option value="일반">일반</option>
+            <option value="업무">업무</option>
+            <option value="개인">개인</option>
+        </select>
+        <label>검색</label>
+        <input type="text" id="inp_keyword" placeholder="제목/내용 검색" onkeydown="if(event.key==='Enter') load_list()">
+        <button class="btn btn-primary" onclick="load_list()">🔍 조회</button>
+    </div>
+
+    <!-- 액션 바 -->
+    <div class="action-bar">
+        <button class="btn btn-outline" onclick="add_row()">＋ 신규행</button>
+        <button class="btn btn-success" onclick="save_all()">💾 전체 저장</button>
+        <span class="spacer"></span>
+        <span id="total-info"></span>
+    </div>
+
+    <!-- 테이블 -->
+    <div class="tbl-wrap">
+        <div id="tbl_memo"></div>
+    </div>
+</div>
+
+<script>
+'use strict';
+
+/* ── 테이블 정의 ─────────────────────────────────── */
+var CATEGORY_CODES = [
+    { v: '일반', l: '일반' },
+    { v: '업무', l: '업무' },
+    { v: '개인', l: '개인' },
+];
+
+var tblOption = {
+    table: { width: '100%' },
+    column: [
+        { title: 'OID',  id: 'oid',      type: 'text',    visible: false, role: 'info' },
+        { title: '분류',  id: 'category', type: 'code',    visible: true,  role: 'edit', codes: CATEGORY_CODES },
+        { title: '제목',  id: 'title',    type: 'text',    visible: true,  role: 'edit' },
+        { title: '내용',  id: 'content',  type: 'text',    visible: true,  role: 'edit' },
+        { title: '완료',  id: 'done',     type: 'check',   visible: true,  role: 'edit' },
+        { title: '등록일', id: 'created',  type: 'text',    visible: true,  role: 'info' },
+        { title: '관리',  id: '',         type: 'control', visible: true,  role: 'onoff',
+            buttons: [
+                { value: '저장', onclick: 'save_row(this);' },
+                { value: '삭제', onclick: 'delete_row(this);' },
+            ]
+        },
+    ]
+};
+
+var memoTable = new TableLite('tbl_memo', tblOption);
+memoTable.showControls(true);
+
+/* ── 조회 ────────────────────────────────────────── */
+function load_list() {
+    var fd = new FormData();
+    fd.append('func',     'list_memo');
+    fd.append('keyword',  document.getElementById('inp_keyword').value);
+    fd.append('category', document.getElementById('sel_category').value);
+
+    POST('s00_s2service.php', fd, function(resp) {
+        memoTable.clear();
+        var list = resp.data.list || [];
+        memoTable.showData(list);
+        // 완료 행 스타일
+        list.forEach(function(row, i) {
+            var trs = memoTable.table.querySelectorAll('tr[data-form="cloned"]');
+            if (trs[i] && row.done === '1') trs[i].classList.add('done-row');
+        });
+        document.getElementById('total-info').textContent = '총 ' + list.length + '건';
+    });
+}
+
+/* ── 신규 행 추가 ─────────────────────────────────── */
+function add_row() {
+    var cl = memoTable.appendRow();
+    memoTable.setRow(cl, { oid: '', category: '일반', title: '', content: '', done: '0', created: '' });
+    // 제목 셀 포커스
+    var titleTd = cl.querySelector('[data-id="title"]');
+    if (titleTd) { titleTd.focus(); window.getSelection && window.getSelection().removeAllRanges(); }
+    document.getElementById('total-info').textContent = '';
+}
+
+/* ── 행 저장 ─────────────────────────────────────── */
+function save_row(btn) {
+    var oid     = memoTable.getCellData('oid',      btn, 'TR');
+    var category= memoTable.getCellData('category', btn, 'TR');
+    var title   = memoTable.getCellData('title',    btn, 'TR');
+    var content = memoTable.getCellData('content',  btn, 'TR');
+    var done    = memoTable.getCellData('done',     btn, 'TR');
+
+    var fd = new FormData();
+    fd.append('func',     'save_memo');
+    fd.append('oid',      oid);
+    fd.append('category', category);
+    fd.append('title',    title);
+    fd.append('content',  content);
+    fd.append('done',     done);
+
+    POST('s00_s2service.php', fd, function(resp) {
+        // 저장 후 oid 업데이트 (신규→기존)
+        var tr = btn;
+        while (tr && tr.tagName !== 'TR') tr = tr.parentNode;
+        if (tr && resp.data && resp.data.oid) {
+            var oidTd = tr.querySelector('[data-id="oid"]');
+            if (oidTd) oidTd.textContent = resp.data.oid;
+        }
+        alert(resp.data.msg || resp.data);
+    });
+}
+
+/* ── 전체 저장 ───────────────────────────────────── */
+function save_all() {
+    var trs = memoTable.table.querySelectorAll('tr[data-form="cloned"]');
+    if (trs.length === 0) { alert('저장할 행이 없습니다.'); return; }
+    var count = 0;
+    trs.forEach(function(tr) {
+        var saveBtn = tr.querySelector('input[value="저장"]');
+        if (saveBtn) { save_row(saveBtn); count++; }
+    });
+    // 개별 저장 후 alert 대신 일괄 후 새로고침
+    setTimeout(load_list, 400 * count);
+}
+
+/* ── 행 삭제 ─────────────────────────────────────── */
+function delete_row(btn) {
+    var oid = memoTable.getCellData('oid', btn, 'TR');
+    if (!oid) {
+        // 신규(미저장) 행은 그냥 DOM에서 제거
+        var tr = btn;
+        while (tr && tr.tagName !== 'TR') tr = tr.parentNode;
+        if (tr) tr.parentNode.removeChild(tr);
+        return;
+    }
+    if (!confirm('삭제하시겠습니까?')) return;
+
+    var fd = new FormData();
+    fd.append('func', 'delete_memo');
+    fd.append('oid',  oid);
+
+    POST('s00_s2service.php', fd, function() {
+        var tr = btn;
+        while (tr && tr.tagName !== 'TR') tr = tr.parentNode;
+        if (tr) tr.parentNode.removeChild(tr);
+    });
+}
+
+/* ── 초기 로딩 ───────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', load_list);
+</script>
+</body>
+</html>

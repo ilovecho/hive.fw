@@ -1,0 +1,67 @@
+@charset "utf-8";
+
+@font-face { font-family: NG; src: local(※), url(../css/NanumGothic.woff) format("woff"); }
+
+html, body {
+    display: flex;
+    flex-flow: column;
+    align-items: stretch;
+    height: 100%;
+    line-height: 1;
+    font-family: NG, sans-serif;
+}
+
+body.waiting, body.wait *, body.wait { cursor: progress !important; }
+
+h2 { display: block; font-size: 1.3em; margin: 0.83em 0; font-weight: bold; }
+
+a, a:hover, a:visited, a:link, a:active { text-decoration: none; }
+
+input { margin: 1px; }
+input[type=button] { margin: 5px 1px; font-family: NG; text-align: center; font-size: 12px; }
+
+.button_base { background: #eee; padding: 4px 0; margin: 0 10px; font-size: 0.8em; }
+.button_span {
+    cursor: pointer;
+    display: inline-block; width: 4.8em;
+    margin: 2px; padding: 8px;
+    font-size: 1.3em; color: white;
+    border: 1px solid #ddd;
+    background-color: #bbb;
+    border-radius: 6px;
+    border-color: #ddd #ddd #444 #444;
+}
+.button_span:active { background: green; }
+
+.contents { width: 100%; }
+.trhover tr:hover { background-color: #FFCC00; }
+
+table {
+    border-collapse: collapse;
+    border: 2px solid black;
+    margin: 0 auto;
+    background-color: transparent;
+    font: 12px sans-serif;
+}
+.keycolume { background-color: #EBEBEB; text-align: center; }
+
+th, td {
+    padding: 5px;
+    text-align: center;
+    color: #333;
+    line-height: 140%;
+    word-break: break-all;
+    border: 1px solid black;
+    vertical-align: middle;
+}
+
+.enableread  { -webkit-user-modify: read; user-modify: read; background-color: lightgray; }
+.enablewrite { -webkit-user-modify: read-write-plaintext-only; user-modify: read-write-plaintext-only; background-color: lightyellow; cursor: pointer; }
+.hidetext    { -webkit-text-security: none; }
+
+.cell_button { box-shadow: inset -2px -2px 1px 2px #999; border-radius: 4px; color: blue; transition: 0.3s; }
+.cell_button:active { box-shadow: inset 2px 2px 3px 3px darkgray; color: #4CAF50; font-weight: bold; filter: invert(100%); }
+.cell_button:hover  { box-shadow: inset -1px -1px 1px 2px #999; }
+
+.col_hide       { display: none; }
+.table_control  { content: ""; display: table; clear: both; width: 100%; }

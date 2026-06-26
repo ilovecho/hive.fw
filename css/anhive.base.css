@@ -1,0 +1,165 @@
+@charset "utf-8";
+
+@font-face { font-family: NG; src: local(※), url(../css/NanumGothic.woff) format("woff"); }
+
+html, body {
+    display: flex;
+    flex-flow: column;
+    align-items: stretch;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    font-family: NG, sans-serif;
+    -webkit-text-size-adjust: none;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+body.waiting, body.wait *, body.wait { cursor: progress !important; }
+
+h2 {
+    display: block;
+    font-size: 1.3em;
+    margin: 0.83em 0;
+    font-weight: bold;
+}
+
+a, a:hover, a:visited, a:link, a:active { text-decoration: none; }
+
+input { margin: 1px; }
+input[type=button] {
+    margin: 5px 1px;
+    font-family: NG;
+    text-align: center;
+    font-size: 12px;
+}
+
+/* ── 레이아웃 헬퍼 ── */
+.contents { width: 100%; }
+
+.headnote {
+    padding: 0.2em 0;
+    border-top: 2px solid #a0a0a0;
+    border-bottom: 2px solid #a0a0a0;
+    background: #c0c0c0;
+    text-align: center;
+}
+
+.footer {
+    flex: 0 1 15px;
+    margin-top: 4px;
+    padding: 0.2em 0;
+    border-top: 2px solid #a0a0a0;
+    border-bottom: 2px solid #a0a0a0;
+    background: #707070;
+    text-align: center;
+    font-size: 0.8em;
+    color: white;
+}
+
+/* ── 버튼 ── */
+.button_base {
+    background: #eee;
+    padding: 4px 0;
+    margin: 0 10px;
+    font-size: 0.8em;
+}
+.button_span {
+    cursor: pointer;
+    display: inline-block;
+    width: 4.8em;
+    margin: 2px;
+    padding: 8px;
+    font-size: 1.3em;
+    color: white;
+    border: 1px solid #ddd;
+    background-color: #bbb;
+    border-radius: 6px;
+    border-color: #ddd #ddd #444 #444;
+}
+.button_span:active { background: green; }
+
+/* ── 테이블 ── */
+table {
+    border-collapse: collapse;
+    border: 2px solid black;
+    margin: 0 auto;
+    background-color: transparent;
+    font: 12px sans-serif;
+}
+th, td {
+    padding: 5px;
+    text-align: center;
+    color: #333;
+    line-height: 140%;
+    word-break: break-all;
+    border: 1px solid black;
+    vertical-align: middle;
+}
+.keycolume { background-color: #EBEBEB; text-align: center; }
+.trhover tr:hover { background-color: #FFCC00; }
+
+/* ── 편집 셀 ── */
+.enableread {
+    -webkit-user-modify: read;
+    user-modify: read;
+    background-color: lightgray;
+}
+.enablewrite {
+    -webkit-user-modify: read-write-plaintext-only;
+    user-modify: read-write-plaintext-only;
+    background-color: lightyellow;
+    cursor: pointer;
+}
+[contenteditable="true"]:active,
+[contenteditable="true"]:focus {
+    display: block;
+    color: red;
+    font-family: courier, sans-serif;
+    background: #fff;
+    line-height: 1.5;
+    position: relative;
+}
+
+/* ── 셀 버튼 ── */
+.cell_button {
+    box-shadow: inset -2px -2px 1px 2px #999;
+    border-radius: 4px;
+    color: blue;
+    transition: 0.3s;
+}
+.cell_button:active {
+    box-shadow: inset 2px 2px 3px 3px darkgray;
+    color: #4CAF50;
+    font-weight: bold;
+    filter: invert(100%);
+}
+.cell_button:hover { box-shadow: inset -1px -1px 1px 2px #999; }
+
+/* ── 유틸 ── */
+.col_hide { display: none; }
+.table_control { content: ""; display: table; clear: both; width: 100%; }
+.pages { color: #565656; font-size: 14px; padding: 0; }
+.pages :hover { color: #56FF56; cursor: pointer; }
+.link { color: blue; }
+
+/* ── 모달 ── */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    overflow-y: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 10px auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 550px;
+    height: fit-content;
+}
+.close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+.close:hover, .close:focus { color: #000; }
