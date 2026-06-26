@@ -1,0 +1,20 @@
+# 첨부 원본 파일 직접 접근 차단 (다운로드는 download.php 로만)
+Require all denied
+
+# Apache 2.2 호환
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
+
+# 업로드 파일이 스크립트로 실행되지 않도록 (mod_php 있을 때만 적용 — php-fpm 500 방지)
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_mime.c>
+    RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .phps
+    RemoveType .php .phtml .php3 .php4 .php5 .php7 .phps
+</IfModule>

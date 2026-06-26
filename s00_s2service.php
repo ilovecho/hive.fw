@@ -40,6 +40,7 @@ $services = [];
 
 $serviceFiles = [
     __DIR__ . '/s01_auth.php',      // 인증/세션 (login/logout/get_csrf/whoami)
+    __DIR__ . '/s01_attach.php',    // 메모 첨부파일 (업로드/목록/삭제)
     __DIR__ . '/s01_memo.php',      // 샘플: 메모 CRUD
     // __DIR__ . '/s01_xxx.php',    // 추가 서비스는 여기에
 ];

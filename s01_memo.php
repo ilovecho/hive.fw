@@ -137,6 +137,9 @@ function _delete_memo(): void
     $oid = _memo_oid(get_POST('oid', ''));
     if ($oid <= 0) outputJSON('삭제할 항목이 없습니다.', 'error');
 
+    // 첨부 참조 정리 (마지막 참조면 실제 파일까지 삭제)
+    if (function_exists('attach_purge_memo')) attach_purge_memo($oid);
+
     set_sql("DELETE FROM memo WHERE oid=:oid", [':oid' => $oid]);
     outputJSON('삭제되었습니다.');
 }

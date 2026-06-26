@@ -126,6 +126,23 @@ table.getCellData('id', btn, 'TR');  // 셀 값 읽기
 
 ---
 
+## 메모 첨부파일 (콘텐츠 주소 + 참조 카운팅)
+
+- 첨부는 `document/` 폴더에 **내용 MD5 해시**를 파일명으로 저장 → **동일 내용 파일은 중복 저장하지 않음**.
+- `document`(파일 메타) + `memo_attach`(메모↔파일 참조) 테이블로 관리.
+- **참조 카운팅**: 같은 파일을 여러 메모가 참조할 수 있고, **마지막 참조 메모/첨부가 삭제될 때까지 물리 파일은 보존**됨. 마지막 참조가 사라지면 자동 삭제(GC).
+- 보안: `document/`는 `.htaccess`로 웹 직접 접근 차단 + PHP 실행 비활성화. 다운로드는 **로그인 필요**한 `download.php?att=<id>`로만, 항상 `attachment`(octet-stream)로 전송.
+- 업로드 제한: 기본 10MB (`s01_attach.php` 의 `ATTACH_MAX_BYTES`). PHP의 `upload_max_filesize`/`post_max_size`도 함께 확인.
+
+| 파일 | 역할 |
+|------|------|
+| `s01_attach.php` | upload_attach / list_attach / delete_attach + 참조 GC |
+| `download.php` | 인증된 첨부 다운로드 (GET) |
+| `js/hive_attach.js`, `css/hive_attach.css` | 첨부 UI 컴포넌트 |
+| `document/` | 실제 첨부 저장소 (웹 접근 차단) |
+
+사용: 메모를 **저장한 뒤**(oid 발급 후) 팝업/입력화면의 **첨부파일** 영역에서 파일 선택 → `＋ 첨부`.
+
 ## 새 서비스 추가 방법
 
 1. `s01_myapp.php` 작성
@@ -175,6 +192,10 @@ chmod 640 /var/www/html/myapp/inc/*.php
 sudo chown -R www-data:www-data /var/www/html/myapp/db
 sudo chmod 770 /var/www/html/myapp/db
 sudo chmod 660 /var/www/html/myapp/db/hive.db
+
+# 첨부파일 저장 폴더 쓰기 권한 (업로드 사용 시 필수)
+sudo chown -R www-data:www-data /var/www/html/myapp/document
+sudo chmod 770 /var/www/html/myapp/document
 
 sudo systemctl restart apache2
 ```

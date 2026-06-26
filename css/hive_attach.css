@@ -1,0 +1,79 @@
+/**
+ * hive_attach.css  —  메모 첨부파일 UI 스타일
+ */
+
+.attach-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.attach-file {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 13px;
+}
+.attach-up {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    border: 1px solid #164c7e;
+    border-radius: 6px;
+    background: #164c7e;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.attach-up:hover { filter: brightness(0.96); }
+
+.attach-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.attach-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #f4f7fb;
+    border: 1px solid #d7e1ea;
+    border-radius: 6px;
+}
+.attach-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #164c7e;
+    font-size: 13px;
+    text-decoration: none;
+    word-break: break-all;
+}
+.attach-name:hover { text-decoration: underline; }
+.attach-size {
+    flex: 0 0 auto;
+    color: #6b7280;
+    font-size: 12px;
+}
+.attach-del {
+    flex: 0 0 auto;
+    padding: 3px 9px;
+    border: 1px solid #e88;
+    border-radius: 5px;
+    background: #fff;
+    color: #c0392b;
+    font-size: 12px;
+    cursor: pointer;
+}
+.attach-del:hover { background: #fdecec; }
+
+.attach-empty {
+    padding: 6px 2px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+.attach-hint {
+    padding: 6px 2px;
+    color: #94a3b8;
+    font-size: 12px;
+}

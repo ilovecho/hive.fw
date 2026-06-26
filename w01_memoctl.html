@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>메모 관리 (목록)</title>
 <link rel="stylesheet" href="./css/hive_table_lite.css">
+<link rel="stylesheet" href="./css/hive_attach.css">
 <script src="./js/hive_table_lite.js"></script>
 <script src="./js/anhive.base.js"></script>
+<script src="./js/hive_attach.js"></script>
 <style>
     :root {
         --primary: #1a4f8a;
@@ -243,6 +245,11 @@
             <div class="form-row">
                 <label class="label-check"><input type="checkbox" id="m_done"> 완료</label>
             </div>
+            <div class="form-row" id="m_attach_row">
+                <label>첨부파일</label>
+                <div id="m_attach"></div>
+                <div id="m_attach_hint" class="attach-hint">메모를 저장하면 파일을 첨부할 수 있습니다.</div>
+            </div>
         </div>
         <div class="modal-foot">
             <button type="button" class="btn btn-danger" id="m_delete_btn" onclick="delete_modal()">삭제</button>
@@ -323,11 +330,27 @@ function close_modal() {
     document.getElementById('memoModal').classList.remove('is-open');
 }
 
-/* 추가: 빈 팝업 (삭제 버튼 숨김) */
+/* 첨부 영역: oid 가 있으면 첨부 UI 표시, 없으면 안내문구 */
+function _attach_view(oid) {
+    var box  = document.getElementById('m_attach');
+    var hint = document.getElementById('m_attach_hint');
+    if (oid && parseInt(oid, 10) > 0) {
+        hint.style.display = 'none';
+        box.style.display = '';
+        HiveAttach.mount(oid, box);
+    } else {
+        box.style.display = 'none';
+        while (box.firstChild) box.removeChild(box.firstChild);
+        hint.style.display = '';
+    }
+}
+
+/* 추가: 빈 팝업 (삭제 버튼 숨김, 첨부는 저장 후) */
 function go_add() {
     fill_modal({});
     document.getElementById('modalTitle').textContent = '메모 추가';
     document.getElementById('m_delete_btn').style.display = 'none';
+    _attach_view(0);
     document.getElementById('memoModal').classList.add('is-open');
     setTimeout(function() { document.getElementById('m_title').focus(); }, 30);
 }
@@ -346,6 +369,7 @@ function edit_row(btn) {
         fill_modal(resp.data);
         document.getElementById('modalTitle').textContent = '메모 수정';
         document.getElementById('m_delete_btn').style.display = '';
+        _attach_view(resp.data.oid);
         document.getElementById('memoModal').classList.add('is-open');
     });
 }
@@ -363,9 +387,15 @@ function save_modal() {
     fd.append('content',  document.getElementById('m_content').value);
     fd.append('done',     document.getElementById('m_done').checked ? '1' : '0');
 
-    POST('s00_s2service.php', fd, function() {
-        close_modal();
-        load_list();      // 목록 복귀(갱신)
+    POST('s00_s2service.php', fd, function(resp) {
+        var newOid = (resp.data && resp.data.oid) ? resp.data.oid : document.getElementById('m_oid').value;
+        load_list();      // 배경 목록 갱신
+
+        // 저장 후 수정 모드로 전환 → 첨부 가능 (팝업 유지, 닫기는 취소/×)
+        document.getElementById('m_oid').value = newOid;
+        document.getElementById('modalTitle').textContent = '메모 수정';
+        document.getElementById('m_delete_btn').style.display = '';
+        _attach_view(newOid);
     });
 }
 

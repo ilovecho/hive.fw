@@ -7,8 +7,10 @@
     <!-- Grid 기반 단일 메모 입력 화면 -->
     <link rel="stylesheet" href="./css/hive_table_lite.css" type="text/css">
     <link rel="stylesheet" href="./css/hive_grid_lite.css" type="text/css">
+    <link rel="stylesheet" href="./css/hive_attach.css" type="text/css">
     <script src="./js/hive_grid_lite.js"></script>
     <script src="./js/anhive.base.js"></script>
+    <script src="./js/hive_attach.js"></script>
 
     <title>메모 입력 - Grid Form</title>
 
@@ -198,6 +200,11 @@
         <div id="memo_grid" class="grid-box"></div>
     </section>
 
+    <section class="card" id="ms_attach_card" style="display:none">
+        <div class="card-title">첨부파일 <small>저장된 메모에만 첨부할 수 있습니다</small></div>
+        <div class="grid-box"><div id="ms_attach"></div></div>
+    </section>
+
     <div id="msg" class="msg">새 메모를 입력하거나, 상단에 OID를 입력해 기존 메모를 불러와 수정하세요.</div>
 </div>
 
@@ -270,12 +277,26 @@ function init() {
     }
 }
 
+/* 첨부 카드: oid 가 있으면 표시/마운트, 없으면 숨김 */
+function ms_attach_view(oid) {
+    var card = document.getElementById('ms_attach_card');
+    var box  = document.getElementById('ms_attach');
+    if (oid && parseInt(oid, 10) > 0) {
+        card.style.display = '';
+        HiveAttach.mount(oid, box);
+    } else {
+        card.style.display = 'none';
+        while (box.firstChild) box.removeChild(box.firstChild);
+    }
+}
+
 /* ── 신규 입력 ───────────────────────────────────── */
 function new_memo() {
     memoGrid.clear();
     memoGrid.showData({ oid: '', category: '일반', done: '0', created: '', title: '', content: '' });
     document.getElementById('loadOid').value = '';
     setMode('신규');
+    ms_attach_view(0);
     showMsg('새 메모를 입력합니다.');
 }
 
@@ -337,6 +358,7 @@ function load_memo(oid) {
         memoGrid.showData(resp.data);
         document.getElementById('loadOid').value = resp.data.oid;
         setMode('수정');
+        ms_attach_view(resp.data.oid);
         showMsg('메모[' + oid + ']를 불러왔습니다.', 'ok');
     });
 }
