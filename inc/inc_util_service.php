@@ -100,3 +100,44 @@ function get_md5digest(string $userid, string $password): string
 {
     return md5($userid . ':Hive Service Area:' . $password);
 }
+
+/* ============================================================
+ *  비밀번호 해싱 (P3/H4)
+ * ============================================================ */
+
+/** 평문 → 안전한 해시 (bcrypt/argon2, PHP 기본 알고리즘) */
+function hash_password(string $plain): string
+{
+    return password_hash($plain, PASSWORD_DEFAULT);
+}
+
+/**
+ * 비밀번호 검증.
+ *  - 최신 해시($2y$/$argon...)는 password_verify
+ *  - 레거시 SHA-256(64-hex)은 임시 호환 → 성공 시 재해시 필요 표시
+ *
+ * @param bool $needsRehash 검증 성공 후 password_hash 로 갱신 필요 여부
+ */
+function verify_password(string $plain, string $stored, bool &$needsRehash = false): bool
+{
+    $needsRehash = false;
+    if ($stored === '') return false;
+
+    // 최신 해시 형식
+    if ($stored[0] === '$') {
+        if (password_verify($plain, $stored)) {
+            $needsRehash = password_needs_rehash($stored, PASSWORD_DEFAULT);
+            return true;
+        }
+        return false;
+    }
+
+    // 레거시 SHA-256(64-hex) 호환 — 성공 시 최신 해시로 마이그레이션 권장
+    if (preg_match('/^[0-9a-f]{64}$/i', $stored)
+        && hash_equals(strtolower($stored), hash('sha256', $plain))) {
+        $needsRehash = true;
+        return true;
+    }
+
+    return false;
+}

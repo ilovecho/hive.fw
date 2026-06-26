@@ -189,6 +189,7 @@
             <button type="button" class="secondary" onclick="new_memo()">신규</button>
             <button type="button" onclick="save_memo()">저장</button>
             <button type="button" class="danger" onclick="delete_memo()">삭제</button>
+            <button type="button" class="secondary" onclick="do_logout()">로그아웃</button>
         </div>
     </section>
 
@@ -240,6 +241,13 @@ function setMode(text) { document.getElementById('modeBadge').textContent = text
 
 /* ── 목록(memoctl)으로 이동 ──────────────────────── */
 function go_list() { window.location.href = 'w01_memoctl.html'; }
+
+/* ── 로그아웃 ────────────────────────────────────── */
+function do_logout() {
+    var fd = new FormData();
+    fd.append('func', 'logout');
+    POST('s00_s2service.php', fd, function() { location.href = 'w00_login.html'; });
+}
 
 function getQueryParam(name) {
     var m = document.location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));

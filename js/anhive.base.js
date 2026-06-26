@@ -155,6 +155,12 @@
 
         fetch(url, options)
             .then(function (response) {
+                // 401: 미로그인/세션만료 → 로그인 페이지로 이동
+                if (response.status === 401) {
+                    var here = encodeURIComponent(location.pathname.replace(/.*\//, '') + location.search);
+                    location.href = 'w00_login.html?next=' + here;
+                    throw new Error('Unauthorized');
+                }
                 // HTTP 레벨 에러 (404, 500 등)
                 if (!response.ok) {
                     const err = new Error('HTTP Error ' + response.status);
@@ -191,6 +197,7 @@
                 }
             })
             .catch(function (err) {
+                if (err && err.message === 'Unauthorized') return;  // 이미 로그인 페이지로 이동 중
                 onError(err);
             });
     }

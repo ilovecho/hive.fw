@@ -156,4 +156,17 @@ sudo systemctl restart apache2
   ```
 - **디버그 로그**: `HIVE_DEBUG` 기본값은 `false`. 개발 중에만 상위에서 `define('HIVE_DEBUG', true)`.
 - **에러 응답**: 예외 상세는 서버 로그(`error_log`)에만 남고, 클라이언트엔 일반 메시지만 반환됨.
-- **미구현(권장 추가)**: 라우터 인증 게이트, CSRF 토큰 검증, 비밀번호 해싱은 `password_hash()` 사용.
+
+### 인증 / CSRF (구현됨)
+
+- 라우터(`s00_s2service.php`)가 `$public_funcs`(기본 `['login']`) 외 **모든 func 에 로그인 + CSRF 검증**을 강제함.
+- 로그인: `s01_auth.php` 의 `login`/`logout`/`get_csrf`/`whoami`. 비밀번호는 `password_hash`/`password_verify`, 레거시 SHA-256은 로그인 성공 시 자동 재해시.
+- CSRF: 로그인 시 세션 저장 + `XSRF-TOKEN` 쿠키 발급 → `anhive.base.js` 가 `X-CSRF-TOKEN` 헤더로 자동 전송 → 라우터가 `hash_equals` 로 검증.
+- 세션 쿠키: `HttpOnly` + `SameSite=Strict` (+ HTTPS면 `Secure`).
+- 미로그인(401) 시 클라이언트는 `w00_login.html` 로 자동 이동.
+
+**초기 관리자 비밀번호 설정 (CLI)** — 기존 평문을 모르거나 새 계정이 필요할 때:
+```bash
+php setup_admin.php system_admin 'NewP@ss123'
+```
+샘플 로그인 화면: `http://<서버IP>/myapp/w00_login.html`
