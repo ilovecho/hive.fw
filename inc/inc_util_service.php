@@ -8,7 +8,8 @@
  * - 기타:  make_uuid_v4(), make_random_string(), get_client_ip()
  */
 
-if (!defined('HIVE_DEBUG')) define('HIVE_DEBUG', true);
+// 운영 기본값은 false. 개발 시 상위에서 define('HIVE_DEBUG', true) 로 활성화.
+if (!defined('HIVE_DEBUG')) define('HIVE_DEBUG', false);
 
 /* ============================================================
  *  로깅

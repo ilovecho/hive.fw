@@ -15,6 +15,16 @@ $services['get_memo']    = '_get_memo';
 $services['save_memo']   = '_save_memo';
 $services['delete_memo'] = '_delete_memo';
 
+/**
+ * oid 입력을 양의 정수로 정규화. 유효하지 않으면 0 반환.
+ */
+function _memo_oid($raw): int
+{
+    if ($raw === '' || $raw === null) return 0;
+    if (!ctype_digit((string)$raw)) return 0;   // 숫자만 허용
+    return (int)$raw;
+}
+
 /* ── 테이블 자동 생성 ──────────────────────────────── */
 function _memo_table(): void
 {
@@ -56,8 +66,8 @@ function _get_memo(): void
 {
     _memo_table();
 
-    $oid = get_POST('oid', '');
-    if ($oid === '') outputJSON('조회할 oid가 없습니다.', 'error');
+    $oid = _memo_oid(get_POST('oid', ''));
+    if ($oid <= 0) outputJSON('유효하지 않은 oid 입니다.', 'error');
 
     $rows = get_sql(
         "SELECT oid, category, title, content, done, created FROM memo WHERE oid = :oid",
@@ -71,7 +81,7 @@ function _save_memo(): void
 {
     _memo_table();
 
-    $oid      = get_POST('oid', '');
+    $oid      = _memo_oid(get_POST('oid', ''));
     $title    = get_POST('title', '');
     $content  = get_POST('content', '');
     $category = get_POST('category', '일반');
@@ -79,7 +89,7 @@ function _save_memo(): void
 
     if (trim($title) === '') outputJSON('제목을 입력하세요.', 'error');
 
-    if ($oid === '' || $oid === null) {
+    if ($oid <= 0) {
         set_sql(
             "INSERT INTO memo (category, title, content, done) VALUES (:category, :title, :content, :done)",
             [':category' => $category, ':title' => $title, ':content' => $content, ':done' => $done]
@@ -98,8 +108,8 @@ function _save_memo(): void
 /* ── delete_memo ───────────────────────────────────── */
 function _delete_memo(): void
 {
-    $oid = get_POST('oid', '');
-    if ($oid === '') outputJSON('삭제할 항목이 없습니다.', 'error');
+    $oid = _memo_oid(get_POST('oid', ''));
+    if ($oid <= 0) outputJSON('삭제할 항목이 없습니다.', 'error');
 
     set_sql("DELETE FROM memo WHERE oid=:oid", [':oid' => $oid]);
     outputJSON('삭제되었습니다.');

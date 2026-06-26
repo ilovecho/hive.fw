@@ -144,4 +144,16 @@ chmod 640 /var/www/html/myapp/inc/*.php
 sudo systemctl restart apache2
 ```
 
-샘플 접속: `http://<서버IP>/myapp/w01_memo.html`
+샘플 접속: `http://<서버IP>/myapp/w01_memoctl.html`
+
+---
+
+## 보안 설정 (운영 배포 시)
+
+- **DB/내부파일 차단**: `db/`, `inc/` 에 `.htaccess`(`Require all denied`) 포함됨. `AllowOverride All` 이 켜져 있어야 적용됨. 가능하면 **DB 파일을 웹 루트 밖**으로 옮기고 `DB_DSN` 을 지정:
+  ```php
+  define('DB_DSN', 'sqlite:/home/pi/hive_data/hive.db');
+  ```
+- **디버그 로그**: `HIVE_DEBUG` 기본값은 `false`. 개발 중에만 상위에서 `define('HIVE_DEBUG', true)`.
+- **에러 응답**: 예외 상세는 서버 로그(`error_log`)에만 남고, 클라이언트엔 일반 메시지만 반환됨.
+- **미구현(권장 추가)**: 라우터 인증 게이트, CSRF 토큰 검증, 비밀번호 해싱은 `password_hash()` 사용.

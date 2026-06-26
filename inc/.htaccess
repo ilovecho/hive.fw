@@ -1,0 +1,8 @@
+# 내부 include 파일 직접 접근 차단 (Apache 2.4+)
+Require all denied
+
+# Apache 2.2 호환
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

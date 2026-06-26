@@ -61,7 +61,8 @@ trace_log("CALL func=$func user=$user ip=" . get_client_ip());
 try {
     $result = call_user_func($services[$func]);
     if ($result !== null) _respond(is_array($result) ? $result : ['status' => 'success', 'data' => $result]);
-} catch (Exception $ex) {
+} catch (Throwable $ex) {
+    // 상세는 서버 로그로만, 클라이언트에는 일반 메시지 (내부정보 유출 방지)
     trace_log('[EXCEPTION] ' . $ex->getMessage() . ' @ ' . $ex->getFile() . ':' . $ex->getLine());
-    _error($ex->getMessage(), 500);
+    _error('요청 처리 중 오류가 발생했습니다.', 500);
 }
