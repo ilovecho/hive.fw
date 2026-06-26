@@ -9,6 +9,8 @@ Copyright ⓒ2026 AnHive Co., Ltd. All Rights Reserved.
 SQLite + PHP + 순수 JS로 동작하는 소형 웹 앱 프레임워크.  
 Raspberry Pi 등 저사양 서버에서도 의존성 없이 실행 가능.
 
+> 구조·규약·운영 전반은 [ARCHITECTURE.md](ARCHITECTURE.md) 참고. 본 문서는 빠른 시작·설치 위주.
+
 ---
 
 ## 디렉터리 구조
