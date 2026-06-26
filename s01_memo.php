@@ -67,8 +67,8 @@ function _list_memo(): void
 {
     _memo_table();
 
-    // 키워드 길이 제한 (과도한 LIKE 검색 방지)
-    $rawKeyword = mb_substr((string)get_POST('keyword', ''), 0, MEMO_KEYWORD_MAX);
+    // 키워드 길이 제한 (과도한 LIKE 검색 방지) — mbstring 없이도 동작
+    $rawKeyword = str_limit((string)get_POST('keyword', ''), MEMO_KEYWORD_MAX);
     $keyword    = ($rawKeyword === '') ? '' : '%' . $rawKeyword . '%';
     $category   = get_POST('category', '');
 

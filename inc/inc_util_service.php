@@ -37,6 +37,19 @@ function get_GET(string $key, $default = null)
 }
 
 /**
+ * 문자열을 최대 $n 글자로 절단 (UTF-8 안전).
+ * mbstring 확장이 없어도 동작하도록 PCRE(u) 폴백 제공.
+ */
+function str_limit(string $s, int $n): string
+{
+    if ($n <= 0 || $s === '') return '';
+    if (function_exists('mb_substr')) return mb_substr($s, 0, $n);
+    // mbstring 미설치 환경: UTF-8 경계를 보존하며 절단
+    if (preg_match('/^.{0,' . $n . '}/su', $s, $m)) return $m[0];
+    return substr($s, 0, $n);   // 최후의 수단
+}
+
+/**
  * LIKE 검색 패턴 생성.
  * 값이 없으면 '' 반환 → <c: /> 조건 자동 제거됨.
  *

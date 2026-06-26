@@ -134,6 +134,31 @@ table.getCellData('id', btn, 'TR');  // 셀 값 읽기
 
 ---
 
+## 요구사항
+
+| 구분 | 항목 | 설치 |
+|------|------|------|
+| 필수 | PHP **7.3+** | `apt install php` |
+| 필수 | PDO SQLite (`pdo_sqlite`) | `apt install php-sqlite3` |
+| 필수 | mbstring | `apt install php-mbstring` |
+| 권장 | curl (서버간 연동) | `apt install php-curl` |
+| 필수 | Apache + PHP 모듈 | `apt install apache2 libapache2-mod-php` |
+
+> mbstring 이 없으면 `str_limit()` 가 PCRE 폴백으로 동작하긴 하지만, 한글 처리 일관성을 위해 설치를 권장합니다.
+
+**한 줄 설치(라즈베리파이/Debian):**
+```bash
+sudo apt update
+sudo apt install -y apache2 php libapache2-mod-php php-sqlite3 php-mbstring php-curl
+sudo systemctl restart apache2
+```
+
+설치 후 **점검 스크립트**로 한 번에 확인:
+```bash
+php check_requirements.php
+```
+모든 `[필수]` 항목이 `OK` 면 준비 완료입니다.
+
 ## 설치 (Raspberry Pi / Apache2)
 
 ```bash
