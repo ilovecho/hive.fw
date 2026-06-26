@@ -345,7 +345,10 @@ document.getElementById('loadOid').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') load_by_input();
 });
 
-window.addEventListener('DOMContentLoaded', init);
+// CSRF 토큰을 먼저 받아온 뒤 초기화 (미로그인 시 로그인 페이지로 자동 이동)
+window.addEventListener('DOMContentLoaded', function () {
+    initPage(init);
+});
 </script>
 </body>
 </html>

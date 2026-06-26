@@ -38,21 +38,27 @@
         return m ? decodeURIComponent(m[1]) : null;
     };
 
+    // 메모리에 보관하는 CSRF 토큰 (get_csrf 로 받아 setCsrfToken 으로 저장)
+    let _csrfToken = '';
+
+    /** CSRF 토큰을 메모리에 저장 (페이지 로드시 get_csrf 응답을 넣어둠) */
+    Anhive.setCsrfToken = function (token) {
+        if (typeof token === 'string' && token.length > 0) _csrfToken = token;
+    };
+
     /**
      * CSRF 토큰 추출
-     * - 우선순위: <meta name="csrf-token" content="...">
-     * - 없으면 쿠키에서 'XSRF-TOKEN' or 'csrftoken' 검색
+     * - 우선순위: 메모리 토큰 → <meta name="csrf-token"> → 쿠키
      */
     Anhive.getCsrfToken = function () {
+        if (_csrfToken) return _csrfToken;
+
         const meta = document.querySelector('meta[name="csrf-token"]');
         if (meta && meta.content) return meta.content;
 
-        const fromCookie =
-            Anhive.getCookie('XSRF-TOKEN') ||
-            Anhive.getCookie('csrftoken') ||
-            Anhive.getCookie('CSRF-TOKEN');
-
-        return fromCookie;
+        return Anhive.getCookie('XSRF-TOKEN') ||
+               Anhive.getCookie('csrftoken') ||
+               Anhive.getCookie('CSRF-TOKEN');
     };
 
     /**
@@ -202,6 +208,26 @@
             });
     }
 
+    /**
+     * 페이지 초기화: 서버에서 CSRF 토큰을 받아 메모리에 저장한 뒤 callback 실행.
+     * - 미로그인(401)이면 POST 내부에서 로그인 페이지로 이동.
+     * - 모든 보호 페이지는 onload 시 initPage(준비완료_콜백) 를 호출할 것.
+     *
+     * 사용: initPage(function(){ load_list(); });
+     */
+    function initPage(callback, apiUrl) {
+        var fd = new FormData();
+        fd.append('func', 'get_csrf');
+        POST(apiUrl || 's00_s2service.php', fd, function (resp) {
+            if (resp && resp.data && resp.data.csrf) Anhive.setCsrfToken(resp.data.csrf);
+            if (typeof callback === 'function') callback();
+        }, function () {
+            // get_csrf 실패(미로그인 제외)는 토큰 없이도 화면은 띄움
+            if (typeof callback === 'function') callback();
+        });
+    }
+    Anhive.initPage = initPage;
+
     // ===== 3. 공개 API 바인딩 =====
 
     // 네임스페이스에 할당
@@ -214,6 +240,9 @@
     // 기존 코드: POST('url', data, cb) 그대로 작동하도록
     if (!window.POST) {
         window.POST = POST;
+    }
+    if (!window.initPage) {
+        window.initPage = initPage;
     }
 
     // _getChild 이름을 사용하는 기존 코드 호환용

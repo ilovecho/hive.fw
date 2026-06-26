@@ -45,10 +45,15 @@ $serviceFiles = [
 ];
 
 /*
- * 비로그인 허용 함수 화이트리스트.
- * 여기에 없는 모든 func 는 로그인 + CSRF 검증을 요구한다.
+ * 비로그인 허용 함수 (로그인·CSRF 모두 면제).
  */
 $public_funcs = ['login'];
+
+/*
+ * CSRF 검증 면제 함수 (로그인은 필요, CSRF 토큰은 불필요).
+ * get_csrf 는 토큰을 발급받는 엔드포인트이므로 CSRF 검증에서 제외.
+ */
+$csrf_exempt = ['login', 'get_csrf'];
 
 foreach ($serviceFiles as $file) {
     if (file_exists($file)) require_once $file;
@@ -74,21 +79,21 @@ if (strtoupper($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') _error('POST only',
 $func = trim($_POST['func'] ?? '');
 if ($func === '') _error('func 파라미터가 없습니다.', 400);
 
-global $services, $public_funcs;
+global $services, $public_funcs, $csrf_exempt;
 if (!isset($services[$func]) || !function_exists($services[$func])) {
     _error("알 수 없는 서비스: $func", 404);
 }
 
 /* ── 인증 게이트 (C1) + CSRF 검증 (H1) ──────────────── */
-if (!in_array($func, $public_funcs, true)) {
-    // 1) 로그인 필요
-    if (empty($_SESSION['userid'])) {
-        _error('로그인이 필요합니다.', 401);
-    }
-    // 2) CSRF 토큰 검증 (헤더 X-CSRF-TOKEN 또는 POST _csrf)
+// 1) 로그인 필요 (public 제외)
+if (!in_array($func, $public_funcs, true) && empty($_SESSION['userid'])) {
+    _error('로그인이 필요합니다.', 401);
+}
+// 2) CSRF 토큰 검증 (csrf_exempt 제외)
+if (!in_array($func, $csrf_exempt, true)) {
     $sent = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['_csrf'] ?? '');
     $sess = $_SESSION['csrf'] ?? '';
-    if ($sess === '' || !is_string($sent) || !hash_equals($sess, $sent)) {
+    if ($sess === '' || !is_string($sent) || $sent === '' || !hash_equals($sess, $sent)) {
         _error('CSRF 검증에 실패했습니다. 다시 로그인해주세요.', 403);
     }
 }

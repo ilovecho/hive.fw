@@ -104,7 +104,10 @@ function _auth_logout(): void
 /* ── get_csrf ──────────────────────────────────────── */
 function _auth_get_csrf(): void
 {
-    outputJSON(['csrf' => auth_issue_csrf()]);
+    // 세션에 토큰이 있으면 재사용, 없으면 새로 발급
+    $token = $_SESSION['csrf'] ?? '';
+    if ($token === '') $token = auth_issue_csrf();
+    outputJSON(['csrf' => $token]);
 }
 
 /* ── whoami ────────────────────────────────────────── */
